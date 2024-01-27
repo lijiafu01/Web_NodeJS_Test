@@ -9,7 +9,7 @@ const port = 3000;
 
 // Xác lập một route cơ bản
 app.get('/', (req, res) => {
-  res.send('Xin chào từ Node.js!');
+  res.send('Xin chào từ Node.js hahahaha !');
 });
 
 // Bắt đầu lắng nghe trên cổng đã xác định
