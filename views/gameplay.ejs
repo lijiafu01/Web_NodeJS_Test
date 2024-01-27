@@ -1,0 +1,63 @@
+<!--gameplay.ejs-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gameplay</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .row {
+            margin-bottom: 10px; /* Khoảng cách giữa các hàng */
+        }
+    
+        .col-1 {
+            padding: 0 5px; /* Khoảng cách giữa các cột */
+        }
+    
+        .btn {
+            height: 50px; /* Chiều cao của nút */
+        }
+    </style>
+</head>
+    
+<body>
+    
+    <%
+        let numbers = [];
+        for (let i = 1; i <= 100; i++) {
+            numbers.push(i);
+        }
+
+        // Hàm để randomize mảng
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        shuffleArray(numbers);
+    %>
+    <div class="container">
+        
+        <div class="row">
+            <% numbers.forEach(function(number, index) { %>
+                <% if (index % 10 === 0 && index !== 0) { %>
+                    </div><div class="row">
+                <% } %>
+                <div class="col-1">
+                    <button class="btn btn-outline-secondary w-100 h-100"><%= number %></button>
+                </div>
+            <% }); %>
+        </div>
+        <h2>Danh Sách Người Chơi</h2>
+        <div id="playerList">
+            <% players.forEach(function(player) { %>
+                <div class="player-info">
+                    <span><%= player.name %></span> - <span><%= player.score %></span>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</body>
+</html>
