@@ -1,4 +1,5 @@
 <!--gameplay.ejs-->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,38 +19,132 @@
             height: 50px; /* Chiều cao của nút */
         }
     </style>
-</head>
-    
-<body>
-    
-    <%
-        let numbers = [];
-        for (let i = 1; i <= 100; i++) {
-            numbers.push(i);
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Khai báo biến để sử dụng trong toàn bộ scope của script
+        var currentNumber = 0;
+        var gameStarted = false;
+        var playerID;
+        var socket = io();
+        var playerName = localStorage.getItem('playerName');
+
+        if (playerName) {
+            socket.emit('newPlayer', playerName);
         }
 
-        // Hàm để randomize mảng
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+    
+        // Hàm để cập nhật điểm số của người chơi trên UI
+        function updatePlayerScores(players) {
+            var playerListHTML = '';
+            Object.values(players).forEach(function(player) {
+                playerListHTML += '<div class="player-info"><span>' + player.name + '</span> - <span>' + player.score + '</span></div>';
+            });
+            document.getElementById('playerList').innerHTML = playerListHTML;
+        }
+    
+        document.addEventListener("DOMContentLoaded", function() {
+            // Hàm bắt đầu trò chơi, kích hoạt nút số và cập nhật UI
+            function startGame() {
+                gameStarted = true;
+                console.log('Trò chơi bắt đầu.');
+                console.log('Game started, playerID:', playerID);
+                document.getElementById('startButton').disabled = true;
+                enableNumberButtons();
             }
-        }
-
-        shuffleArray(numbers);
-    %>
+    
+            // Hàm vô hiệu hóa tất cả nút số khi trò chơi chưa bắt đầu
+            function disableNumberButtons() {
+                var numberButtons = document.getElementsByClassName('number-button');
+                console.log('Vô hiệu hóa tất cả nút số.');
+                for (var i = 0; i < numberButtons.length; i++) {
+                    numberButtons[i].disabled = true;
+                }
+            }
+    
+            // Hàm kích hoạt tất cả nút số khi trò chơi bắt đầu
+            function enableNumberButtons() {
+                var numberButtons = document.getElementsByClassName('number-button');
+                console.log('Kích hoạt tất cả nút số.');
+                for (var i = 0; i < numberButtons.length; i++) {
+                    numberButtons[i].disabled = false;
+                }
+            }
+    
+            // Gắn sự kiện click cho nút Start
+            document.getElementById('startButton').addEventListener('click', startGame);
+    
+            // Vô hiệu hóa nút số ban đầu
+            disableNumberButtons();
+    
+            // Lắng nghe sự kiện được phát từ server khi có player mới hoặc cập nhật trạng thái game
+            socket.on('playerID', function(id) {
+                playerID = id;
+                console.log('Player ID received:', playerID);
+            });
+    
+            socket.on('updateGameState', function(data) {
+                currentNumber = data.currentNumber;
+                console.log('Game state updated:', data);
+                updatePlayerScores(data.players);
+            });
+    
+            // Gắn sự kiện click cho mỗi nút số
+            document.querySelectorAll('.number-button').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var numberClicked = parseInt(this.textContent);
+                    console.log('Number clicked:', numberClicked, 'Player ID:', playerID);
+    
+                    // Kiểm tra số được nhấn có phải là số tiếp theo đúng đắn không
+                    if (numberClicked === currentNumber + 1) {
+                        fetch('/verify-number', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ number: numberClicked, playerID: playerID })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Number verified and score updated:', data);
+                                // Cập nhật UI ở đây nếu cần
+                            } else {
+                                console.log('Number is not the next consecutive number.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    } else {
+                        console.log('Number clicked is not the next in sequence.');
+                    }
+                });
+            });
+        });
+    </script>
+    
+</head>
+<body>
     <div class="container">
-        
+        <!-- Nút Start -->
+        <button id="startButton" class="btn btn-primary">Start</button>
+
+        <!-- Hiển Thị Số Hiện Tại -->
+        <h3 id="currentNumber">Số Hiện Tại: 0</h3>
+
+        <!-- Các Nút Số -->
         <div class="row">
             <% numbers.forEach(function(number, index) { %>
                 <% if (index % 10 === 0 && index !== 0) { %>
                     </div><div class="row">
                 <% } %>
                 <div class="col-1">
-                    <button class="btn btn-outline-secondary w-100 h-100"><%= number %></button>
+                    <button class="btn btn-outline-secondary w-100 h-100 number-button"><%= number %></button>
                 </div>
             <% }); %>
         </div>
+
+        <!-- Danh Sách Người Chơi -->
         <h2>Danh Sách Người Chơi</h2>
         <div id="playerList">
             <% players.forEach(function(player) { %>
@@ -59,5 +154,7 @@
             <% }); %>
         </div>
     </div>
+
 </body>
+
 </html>

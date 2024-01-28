@@ -1,0 +1,2 @@
+//2024-01-28: đang làm dở chức năng khi nhấn nút bắt đầu thì cho phép nhấn các nút số:::
+//=> khi player nhấn nút thì gửi số đó về và thực hiện logic so sánh với số hiện tại xem có lớn hơn 1 đơn vị hay không và nhưngx UI khác như score hay "số hiện tại "vẫn là static

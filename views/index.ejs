@@ -4,7 +4,6 @@
 <head>
     <title>Trò Chơi</title>
     <!-- Thêm các file CSS nếu cần -->
-    <script src="/socket.io/socket.io.js"></script>
 </head>
 </head>
 <body>
@@ -18,5 +17,15 @@
     <!-- Thêm các file JavaScript nếu cần -->
 <!-- Nội dung khác của file EJS -->
 <script src="/main.js"></script>
+<script>
+// Trong index.ejs
+document.getElementById('joinForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var playerName = document.getElementById('playerName').value;
+    localStorage.setItem('playerName', playerName);
+    window.location.href = '/gameplay';
+});
+
+</script>
 </body>
 </html>
