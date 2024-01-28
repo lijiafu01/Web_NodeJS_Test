@@ -44,6 +44,9 @@ app.get('/gameplay', (req, res) => {
     if (number === currentNumber + 1) {
       if (players[playerID]) {
         players[playerID].score += 1;
+        // Khi một số được xác nhận là đúng
+        io.emit('numberChosen', { number: number });
+
         console.log(`Score updated: Người chơi ${playerID}, Score: ${players[playerID].score}`);
       } else {
         console.log(`Player not found: Người chơi ${playerID}`);
@@ -55,7 +58,7 @@ app.get('/gameplay', (req, res) => {
       console.log(`Invalid number chosen by player ${playerID}`);
       res.json({ success: false });
     }
-    if(currentNumber === 3) {
+    if(currentNumber === 100) {
       let highestScoringPlayer = null;
       let highestScore = -1;
   

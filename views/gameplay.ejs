@@ -98,6 +98,13 @@
                 currentNumberElement.textContent = '目前數字: ' + number;
             }
         }
+        function hideNumButtonUserChoose(num) {
+            var buttonToHide = document.getElementById('numButton-' + num);
+            if (buttonToHide) {
+                buttonToHide.style.display = 'none'; // Ẩn nút bằng cách thay đổi style
+            }
+        }
+
         
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -177,6 +184,10 @@
             socket.on('redirect', function(destination) {
                 window.location.href = destination; // Chuyển hướng trình duyệt tới trang index.ejs
             });
+            socket.on('numberChosen', function(data) {
+                hideNumButtonUserChoose(data.number);
+            });
+
 
     
             // Gắn sự kiện click cho mỗi nút số
@@ -233,17 +244,21 @@
         <!-- Hiển Thị Số Hiện Tại -->
         <h3 id="currentNumber">目前數字: 0</h3>
 
-        <!-- Các Nút Số -->
+         <!-- Các Nút Số -->
         <div class="row justify-content-center">
             <% numbers.forEach(function(number, index) { %>
                 <% if (index % 10 === 0 && index !== 0) { %>
                     </div><div class="row justify-content-center">
                 <% } %>
                 <div class="col-1">
-                    <button class="btn btn-outline-secondary w-100 h-100 number-button"><%= number %></button>
+                    <!-- Thêm ID tương ứng với giá trị của số vào mỗi nút -->
+                    <button id="numButton-<%= number %>" class="btn btn-outline-secondary w-100 h-100 number-button"><%= number %></button>
+
                 </div>
             <% }); %>
         </div>
+
+
         <div id="countdown"></div>
 
         <!-- Danh Sách Người Chơi -->
