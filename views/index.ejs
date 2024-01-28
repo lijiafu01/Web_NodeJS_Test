@@ -2,21 +2,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trò Chơi</title>
-    <!-- Thêm các file CSS nếu cần -->
-</head>
+    <title>家福的游戲</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        #joinGame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #joinGame button {
+            font-size: 1.5rem; /* Tăng kích thước chữ */
+            padding: 0.5em 1.5em; /* Điều chỉnh padding để làm nút lớn hơn */
+        }
+        .message {
+            text-align: center;
+            font-size: 1.5rem;
+            position: absolute;
+            width: 100%;
+            top: 30%;
+        }
+    </style>
 </head>
 <body>
-    <div id="joinGame">
+    <% if (typeof message !== 'undefined') { %>
+        <div class="message"><%= message %></div>
+    <% } %>
+    <div id="joinGame" class="text-center">
         <form id="joinForm">
-            <input type="text" id="playerName" placeholder="Nhập tên của bạn" required>
-            <button type="submit">Play</button>
+            <input type="text" id="playerName" placeholder="輸入名字" required class="form-control mb-3">
+            <button type="submit" class="btn btn-primary btn-lg">Play</button>
         </form>
     </div>
-
     <!-- Thêm các file JavaScript nếu cần -->
-<!-- Nội dung khác của file EJS -->
-<script src="/main.js"></script>
+</body>
 <script>
 // Trong index.ejs
 document.getElementById('joinForm').addEventListener('submit', function(e) {
@@ -27,5 +47,4 @@ document.getElementById('joinForm').addEventListener('submit', function(e) {
 });
 
 </script>
-</body>
 </html>

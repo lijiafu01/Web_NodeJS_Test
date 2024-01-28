@@ -3,9 +3,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Gameplay</title>
+    <title>家福的游戲</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    
     <style>
         .row {
             margin-bottom: 10px; /* Khoảng cách giữa các hàng */
@@ -18,7 +19,56 @@
         .btn {
             height: 50px; /* Chiều cao của nút */
         }
+        #winningModal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px; /* Điều chỉnh theo nhu cầu */
+            height: 400px; /* Điều chỉnh theo nhu cầu */
+            background-color: green; /* Màu xanh lá */
+            border: 2px solid black;
+            border-radius: 10px; /* Bo tròn góc */
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1050; /* Giá trị cao để đảm bảo hiển thị trên cùng */
+        }
+
+        .modal-content {
+            margin-top: 120px;
+        }
+
+        #okButton {
+            background-color: white;
+            margin-top: 50px; /* Tăng khoảng cách lên một chút */
+            margin-bottom: 10px;
+            border-radius: 4px
+            
+        }
+
+
     </style>
+    <style>
+        .player-info {
+            font-size: 25px; /* Tăng kích thước chữ */
+            margin-bottom: 5px; /* Thêm khoảng cách giữa các thông tin người chơi */
+            /* Thêm bất kỳ quy tắc CSS khác bạn muốn tại đây */
+        }
+    
+        .player-info span {
+            margin-right: 10px; /* Thêm khoảng cách giữa tên và điểm số */
+        }
+    </style>
+    <style>
+        #countdown {
+            position: absolute; /* Sử dụng positioning tuyệt đối */
+            left: 50%; /* Đặt ở giữa theo chiều ngang */
+            transform: translate(-50%, -50%); /* Căn giữa chính xác */
+            /* Thêm các quy tắc CSS khác ở đây nếu cần */
+        }
+    </style>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
         // Khai báo biến để sử dụng trong toàn bộ scope của script
@@ -32,24 +82,32 @@
             socket.emit('newPlayer', playerName);
         }
 
-    
+        
+
         // Hàm để cập nhật điểm số của người chơi trên UI
         function updatePlayerScores(players) {
             var playerListHTML = '';
             Object.values(players).forEach(function(player) {
-                playerListHTML += '<div class="player-info"><span>' + player.name + '</span> - <span>' + player.score + '</span></div>';
+                playerListHTML += '<div class="player-info"><span>' + player.name + '</span>    -   分數:<span>' + player.score + '</span></div>';
             });
             document.getElementById('playerList').innerHTML = playerListHTML;
         }
-    
+        function updateCurrentNumber(number) {
+            var currentNumberElement = document.getElementById('currentNumber');
+            if (currentNumberElement) {
+                currentNumberElement.textContent = '目前數字: ' + number;
+            }
+        }
+        
+
         document.addEventListener("DOMContentLoaded", function() {
             // Hàm bắt đầu trò chơi, kích hoạt nút số và cập nhật UI
             function startGame() {
                 gameStarted = true;
-                console.log('Trò chơi bắt đầu.');
                 console.log('Game started, playerID:', playerID);
-                document.getElementById('startButton').disabled = true;
-                enableNumberButtons();
+                document.getElementById('startButton').disabled = true;            
+                socket.emit('gameStarted', gameStarted);
+                            
             }
     
             // Hàm vô hiệu hóa tất cả nút số khi trò chơi chưa bắt đầu
@@ -72,6 +130,10 @@
     
             // Gắn sự kiện click cho nút Start
             document.getElementById('startButton').addEventListener('click', startGame);
+
+            document.getElementById('okButton').addEventListener('click', function() {
+            window.location.href = '/';
+          });
     
             // Vô hiệu hóa nút số ban đầu
             disableNumberButtons();
@@ -86,7 +148,36 @@
                 currentNumber = data.currentNumber;
                 console.log('Game state updated:', data);
                 updatePlayerScores(data.players);
+                updateCurrentNumber(currentNumber);
             });
+            socket.on('timeUpdate', function(timeLeft) {
+                // Cập nhật giao diện người dùng với thời gian còn lại
+                var countdownElement = document.getElementById('countdown');
+                if (countdownElement) {
+                    countdownElement.textContent = '游戲準備開始: ' + timeLeft;
+                }
+                
+            });
+
+            socket.on('startGame', function() {
+                var countdownElement = document.getElementById('countdown');
+                if (countdownElement) {
+                    countdownElement.style.display = 'none';
+                }
+
+                enableNumberButtons(); 
+            });
+            socket.on('offStartBtn', function() {
+                document.getElementById('startButton').disabled = true;  
+            });
+            socket.on('endGame', function(winnerData) {
+                document.getElementById('winningMessage').textContent = `恭喜玩家 ${winnerData.name} 贏得了 ${winnerData.score} 分`;
+                document.getElementById('winningModal').style.display = 'block';
+            });
+            socket.on('redirect', function(destination) {
+                window.location.href = destination; // Chuyển hướng trình duyệt tới trang index.ejs
+            });
+
     
             // Gắn sự kiện click cho mỗi nút số
             document.querySelectorAll('.number-button').forEach(function(button) {
@@ -125,27 +216,38 @@
     
 </head>
 <body>
+    <br/>
     <div class="container">
-        <!-- Nút Start -->
-        <button id="startButton" class="btn btn-primary">Start</button>
+        <!-- Phần tử thông báo, ban đầu được ẩn -->
+        <div id="winningModal" style="display: none;">
+            <div class="modal-content">
+                <p id="winningMessage">Chúc mừng người chơi xxx đã thắng với số điểm là xxx</p>
+                <button id="okButton">OK</button>
+            </div>
+        </div>
 
+        <div class="d-flex justify-content-center">
+            <button id="startButton" class="btn btn-primary">開始</button>
+        </div>
+        
         <!-- Hiển Thị Số Hiện Tại -->
-        <h3 id="currentNumber">Số Hiện Tại: 0</h3>
+        <h3 id="currentNumber">目前數字: 0</h3>
 
         <!-- Các Nút Số -->
-        <div class="row">
+        <div class="row justify-content-center">
             <% numbers.forEach(function(number, index) { %>
                 <% if (index % 10 === 0 && index !== 0) { %>
-                    </div><div class="row">
+                    </div><div class="row justify-content-center">
                 <% } %>
                 <div class="col-1">
                     <button class="btn btn-outline-secondary w-100 h-100 number-button"><%= number %></button>
                 </div>
             <% }); %>
         </div>
+        <div id="countdown"></div>
 
         <!-- Danh Sách Người Chơi -->
-        <h2>Danh Sách Người Chơi</h2>
+        <h3>玩家名單</h3>
         <div id="playerList">
             <% players.forEach(function(player) { %>
                 <div class="player-info">
@@ -153,6 +255,7 @@
                 </div>
             <% }); %>
         </div>
+        
     </div>
 
 </body>
