@@ -13,6 +13,11 @@ let currentNumber = 0;
 let players = {};
 let gameStarted = false;
 
+app.use(function (req, res, next) {
+  res.header('Cache-Control', 'no-store');
+  next();
+});
+
 app.get('/', (req, res) => {
   console.log('Một người chơi đã truy cập trang chủ.');
   res.render('index');
