@@ -40,6 +40,8 @@
 <script>
 // Trong index.ejs
 document.getElementById('joinForm').addEventListener('submit', function(e) {
+    localStorage.clear();
+
     e.preventDefault();
     var playerName = document.getElementById('playerName').value;
     localStorage.setItem('playerName', playerName);

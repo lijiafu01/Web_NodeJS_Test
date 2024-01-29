@@ -154,9 +154,15 @@ let countdownTimer;
 const COUNTDOWN_SECONDS = 15;
 
 function countdownFindTime() {
+  
     let timeLeft = COUNTDOWN_SECONDS;
     countdownTimer = setInterval(() => {
-
+      if(!gameStarted)
+      {
+        clearInterval(countdownTimer);
+        timeLeft = COUNTDOWN_SECONDS;
+        return;
+      }
         timeLeft--;
         io.emit('countdownFindTime', timeLeft);
 
