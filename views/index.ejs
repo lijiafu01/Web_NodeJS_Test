@@ -41,10 +41,26 @@
 // Trong index.ejs
 document.getElementById('joinForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    var currentUrl = window.location.href;
     var playerName = document.getElementById('playerName').value;
+
+    // Lưu tên người chơi vào localStorage
     localStorage.setItem('playerName', playerName);
-    window.location.href = '/gameplay';
+
+    // Kiểm tra URL hiện tại và chuyển hướng phù hợp
+    if (currentUrl === "http://lijiafu123.linkpc.net/gameplay" || currentUrl === "http://13.208.214.199/gameplay") {
+        // Chuyển hướng về trang chủ trước
+        window.location.href = '/';
+        // Đặt một khoảng thời gian ngắn trước khi chuyển đến gameplay
+        setTimeout(function() {
+            window.location.href = '/gameplay';
+        }, 100); // Chờ 100 mili giây
+    } else {
+        // Chuyển hướng trực tiếp đến gameplay nếu không phải là URL đặc biệt
+        window.location.href = '/gameplay';
+    }
 });
+
 
 </script>
 </html>
