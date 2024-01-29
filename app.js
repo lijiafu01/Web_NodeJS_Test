@@ -49,8 +49,11 @@ app.get('/gameplay', (req, res) => {
     if (number === currentNumber + 1) {
       if (players[playerID]) {
         players[playerID].score += 1;
+        clearInterval(countdownTimer);
+        countdownFindTime();
         // Khi một số được xác nhận là đúng
         io.emit('numberChosen', { number: number });
+        
 
         console.log(`Score updated: Người chơi ${playerID}, Score: ${players[playerID].score}`);
       } else {
@@ -85,12 +88,6 @@ app.get('/gameplay', (req, res) => {
   
   });
 
-  function redirectToIndexAfterSeconds() {
-    setTimeout(() => {
-        io.emit('redirect', '/'); // Gửi sự kiện 'redirect' tới tất cả clients
-    }, 10000); // 5000 milliseconds = 5 seconds
-}
-
 io.on('connection', (socket) => {
   console.log(`Người chơi có ID ${socket.id} đã kết nối.`);
 
@@ -107,6 +104,10 @@ io.on('connection', (socket) => {
     io.emit('offStartBtn');
     startCountdown();
   });
+  socket.on('numberFound', () => {
+    //clearInterval(countdownTimer); // Dừng đếm thời gian khi tìm thấy số
+    countdownFindTime(); // Bắt đầu lại đếm thời gian
+  }); 
 
   socket.on('disconnect', () => {
     console.log(`Người chơi có ID ${socket.id} đã ngắt kết nối.`);
@@ -148,4 +149,32 @@ function startCountdown() {
             // Kích hoạt bất kỳ logic khởi động trò chơi nào ở đây
         }
     }, 1000);
+}
+let countdownTimer;
+const COUNTDOWN_SECONDS = 15;
+
+function countdownFindTime() {
+    let timeLeft = COUNTDOWN_SECONDS;
+    countdownTimer = setInterval(() => {
+
+        timeLeft--;
+        io.emit('countdownFindTime', timeLeft);
+
+        if (timeLeft <= 0) {
+            clearInterval(countdownTimer);
+            if(currentNumber===99) return;
+            // Xử lý khi hết thời gian ở đây, ví dụ ẩn số hiện tại
+            currentNumber++;
+            io.emit('hideNumber', currentNumber);
+
+            io.emit('updateGameState', { players: players, currentNumber: currentNumber });
+            
+            countdownFindTime(); // Bắt đầu lại đếm thời gian
+        }
+    }, 1000);
+}
+function redirectToIndexAfterSeconds() {
+  setTimeout(() => {
+      io.emit('redirect', '/'); // Gửi sự kiện 'redirect' tới tất cả clients
+  }, 10000); // 5000 milliseconds = 5 seconds
 }

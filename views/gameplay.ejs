@@ -171,6 +171,7 @@
                 if (countdownElement) {
                     countdownElement.style.display = 'none';
                 }
+                socket.emit('numberFound');
 
                 enableNumberButtons(); 
             });
@@ -187,7 +188,14 @@
             socket.on('numberChosen', function(data) {
                 hideNumButtonUserChoose(data.number);
             });
-
+            socket.on('hideNumber', function(hideNum) {
+                hideNumButtonUserChoose(hideNum);
+            });
+            socket.on('countdownFindTime', function(timeLeft) {
+                // Cập nhật giao diện người dùng với thời gian còn lại
+                document.getElementById('countFindNum').textContent = '尋找時間: ' + timeLeft + ' 秒';
+            });
+            
 
     
             // Gắn sự kiện click cho mỗi nút số
@@ -258,8 +266,9 @@
             <% }); %>
         </div>
 
-
+        
         <div id="countdown"></div>
+        <div id="countFindNum"></div>
 
         <!-- Danh Sách Người Chơi -->
         <h3>玩家名單</h3>
